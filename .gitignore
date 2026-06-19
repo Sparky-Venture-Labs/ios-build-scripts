@@ -1,0 +1,8 @@
+.DS_Store
+.build/
+DerivedData/
+*.ipa
+*.xcarchive
+*.p8
+*.mobileprovision
+*.cer

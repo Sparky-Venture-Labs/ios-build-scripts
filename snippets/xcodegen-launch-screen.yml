@@ -1,0 +1,32 @@
+# XcodeGen launch-screen keys that fix the tiny-window bug
+#
+# Symptom: your app launches into a small ~320x480 window on iPhone and
+# iPad instead of filling the screen. That happens when the build has no
+# real launch screen, so the system assumes an ancient screen size.
+#
+# Fix: point at a LaunchScreen storyboard and stop XcodeGen from generating
+# its own Info.plist over the top of yours. Keep BOTH keys below. The
+# INFOPLIST_KEY_ one covers the build-setting path; the plist one covers
+# the Info.plist path. Having both is belt-and-suspenders and harmless.
+#
+# Drop these into your target in project.yml.
+
+targets:
+  YourApp:
+    type: application
+    platform: iOS
+    settings:
+      base:
+        # Don't let XcodeGen auto-generate an Info.plist that wipes your keys.
+        GENERATE_INFOPLIST_FILE: NO
+        # Build-setting path to the launch storyboard.
+        INFOPLIST_KEY_UILaunchStoryboardName: LaunchScreen
+    info:
+      path: YourApp/Info.plist
+      properties:
+        # Info.plist path to the launch storyboard.
+        UILaunchStoryboardName: LaunchScreen
+
+# You also need a LaunchScreen.storyboard in the project (an empty one with
+# the right background color is fine) and it must be in the target's
+# resources so it ships in the build.
