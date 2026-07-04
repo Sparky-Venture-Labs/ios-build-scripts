@@ -1,0 +1,49 @@
+name: Repo Hygiene
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for accidentally committed secrets
+        run: |
+          echo "Scanning for private key / credential file patterns..."
+          if git ls-files | grep -E '\.(p8|p12|pem|cer|mobileprovision|keystore|jks)$'; then
+            echo "::error::A key/credential file is tracked in git. Remove it and rotate the secret."
+            exit 1
+          fi
+          echo "No key/credential files tracked. OK."
+
+      - name: Check for oversized files
+        run: |
+          echo "Checking for files larger than 25 MB..."
+          big=$(git ls-files | while read -r f; do
+            [ -f "$f" ] || continue
+            sz=$(wc -c < "$f")
+            if [ "$sz" -gt 26214400 ]; then echo "$f ($sz bytes)"; fi
+          done)
+          if [ -n "$big" ]; then
+            echo "::warning::Large files found:"
+            echo "$big"
+          else
+            echo "No oversized files. OK."
+          fi
+
+      - name: Confirm a README exists
+        run: |
+          if ls README* >/dev/null 2>&1; then
+            echo "README present. OK."
+          else
+            echo "::warning::No README found in repo root."
+          fi
